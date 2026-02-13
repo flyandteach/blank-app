@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Takeoff Acceleration Warning System - Aviation Safety Application">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Takeoff Acceleration Warning System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAj5JREFUWEfNl09I02Ecxz/f32Z/nJvTOVfNP0MkCIKgi0cPHjx58ODBg6e6eBA8dRA9BA1BkMCDBy+BBy+BhxAEoYOHIAgCCYJAEARBEAS1mc3tN3m+8LT5s81tP0Wu7/Xh+X6fz/P5Ps/38zyP4B8v8Y/5+T+Aqqoq4XQ6G4UQTYKA+XxeLpfLqUwmM5PNZr8bhrFqBUJZANXV1b5AIHAXuAFcBryWdwOJRGIyFos9TSaT85sBlAWg6/p54BZwEagtCZDL5VhfX2dtbY1MJsNmsAFXdV0fB55ZAcoCqKur+w7cBS4Ae0oBGIbB8vIy8/PzrKysrAOGYSxXVlaeBJ4Az4DLhmF8LgZQFkBVVdWMEOIRcAo4CAgrAMMwyOVyxONx/H7/BkA6nf5UVVV1C3gJ1AghTiSTyR/FAMq6AqfTWQm8AY4D+zf/8oVCgVwul0+n0yeBd8A+IcTRWCw2WwygLAAhxD5d1z8Ah4GKDYA8QC6XWxFC3BZCvBFC+Hw+37FoNPqzGEBZAACqqp4EXgPngJ0bgKUsy1oDymazWU3TbgAvgCohxNFYLPa1GMB2AE4ALwEPsM+2p1AofNE07SbwDPhuGMbxUCj0rRTA/wCYW5EH2APsNgwjqmnaHeAJMGUYxolQKPS1FMBfADRNGwROA3sBN+ABNM/OzqoAAWC3YRjfQqHQp1IAfw1g3kVdXV2F0+msEEJ4hRBewzCSwWAwt1UAJStQKkDpPT8Z/gXSFPExnxgWSAAAAABJRU5ErkJggg==">
+</head>
+<body>
+    <div id="app" class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>✈️ Takeoff Acceleration Warning System</h1>
+            <div class="disclaimer">
+                ⚠️ SUPPLEMENTAL TOOL ONLY - NOT CERTIFIED AVIONICS
+            </div>
+        </header>
+
+        <!-- Configuration Panel -->
+        <section id="config-panel" class="panel">
+            <h2>Configuration</h2>
+            
+            <!-- Airport Selection -->
+            <div class="input-group">
+                <label for="airport-search">Airport ICAO Code:</label>
+                <div class="search-container">
+                    <input type="text" 
+                           id="airport-search" 
+                           placeholder="e.g., KJFK, KLAX, KORD"
+                           maxlength="4"
+                           autocomplete="off">
+                    <button id="search-airport-btn" class="btn-secondary">Search</button>
+                </div>
+                <div id="airport-info" class="info-box"></div>
+            </div>
+
+            <!-- Runway Selection -->
+            <div class="input-group">
+                <label for="runway-select">Select Runway:</label>
+                <select id="runway-select" disabled>
+                    <option value="">-- Select Airport First --</option>
+                </select>
+                <div id="runway-info" class="info-box"></div>
+            </div>
+
+            <!-- Weather Information -->
+            <div class="input-group">
+                <label>Current Weather (METAR):</label>
+                <button id="fetch-weather-btn" class="btn-secondary" disabled>Fetch Weather</button>
+                <div id="weather-info" class="info-box"></div>
+            </div>
+
+            <!-- Rotation Speed Input -->
+            <div class="input-group">
+                <label for="vr-input">Rotation Speed (Vr) - IAS in knots:</label>
+                <input type="number" 
+                       id="vr-input" 
+                       placeholder="e.g., 120"
+                       min="40"
+                       max="300"
+                       step="1">
+                <div id="vr-info" class="info-box"></div>
+            </div>
+
+            <!-- System Arming -->
+            <div class="arm-section">
+                <button id="arm-btn" class="btn-arm" disabled>ARM SYSTEM</button>
+                <div id="arm-status" class="status-indicator">DISARMED</div>
+            </div>
+        </section>
+
+        <!-- Monitoring Panel -->
+        <section id="monitor-panel" class="panel" style="display: none;">
+            <h2>Active Monitoring</h2>
+            
+            <div class="monitor-grid">
+                <div class="monitor-item">
+                    <span class="monitor-label">Current Speed:</span>
+                    <span id="current-speed" class="monitor-value">0 kts</span>
+                </div>
+                <div class="monitor-item">
+                    <span class="monitor-label">Required Speed:</span>
+                    <span id="required-speed" class="monitor-value">-- kts</span>
+                </div>
+                <div class="monitor-item">
+                    <span class="monitor-label">Distance Remaining:</span>
+                    <span id="distance-remaining" class="monitor-value">-- ft</span>
+                </div>
+                <div class="monitor-item">
+                    <span class="monitor-label">Acceleration:</span>
+                    <span id="acceleration-value" class="monitor-value">0.0 m/s²</span>
+                </div>
+            </div>
+
+            <div id="warning-display" class="warning-display">
+                <div id="warning-message"></div>
+            </div>
+
+            <div class="monitor-controls">
+                <button id="disarm-btn" class="btn-danger">DISARM SYSTEM</button>
+            </div>
+        </section>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div id="gps-status" class="status-item">
+                <span class="status-icon">📍</span>
+                <span id="gps-text">GPS: Not Active</span>
+            </div>
+            <div id="sensor-status" class="status-item">
+                <span class="status-icon">📊</span>
+                <span id="sensor-text">Sensors: Not Active</span>
+            </div>
+            <div id="data-status" class="status-item">
+                <span class="status-icon">📡</span>
+                <span id="data-text">Data: Not Loaded</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="calculations.js"></script>
+    <script src="sensors.js"></script>
+    <script src="warnings.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
