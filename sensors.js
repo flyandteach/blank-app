@@ -108,11 +108,12 @@ const Sensors = {
             const timeDelta = (posData.timestamp - prev.timestamp) / 1000; // seconds
             
             if (timeDelta > 0) {
-                const distance = Calculations.calculateDistance(
+                const distanceFeet = Calculations.calculateDistance(
                     prev.lat, prev.lon,
                     posData.lat, posData.lon
                 );
-                posData.speed = (distance * Calculations.constants.FEET_TO_METERS) / timeDelta;
+                // Convert feet to meters and divide by time to get m/s (matches GPS speed units)
+                posData.speed = (distanceFeet * Calculations.constants.FEET_TO_METERS) / timeDelta;
             }
         }
 

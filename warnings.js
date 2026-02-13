@@ -213,15 +213,22 @@ const Warnings = {
         
         // Try to use a male voice if available (more authoritative)
         const voices = this.speechSynthesis.getVoices();
-        const maleVoice = voices.find(voice => 
-            voice.name.includes('Male') || 
-            voice.name.includes('male') ||
-            voice.name.includes('Daniel') ||
-            voice.name.includes('James')
-        );
-        
-        if (maleVoice) {
-            utterance.voice = maleVoice;
+        if (voices.length > 0) {
+            // Look for male voices with common names
+            const maleVoice = voices.find(voice => 
+                voice.name.includes('Male') || 
+                voice.name.includes('male') ||
+                voice.name.includes('Daniel') ||
+                voice.name.includes('James') ||
+                voice.name.includes('David')
+            );
+            
+            // Fall back to any English voice if no male voice found
+            const englishVoice = voices.find(voice => 
+                voice.lang.startsWith('en')
+            );
+            
+            utterance.voice = maleVoice || englishVoice || voices[0];
         }
 
         this.speechSynthesis.speak(utterance);
